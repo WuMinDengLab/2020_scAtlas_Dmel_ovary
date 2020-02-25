@@ -1,15 +1,12 @@
 library(Seurat)
 library(ggpubr)
 library(dplyr)
-library(R.utils)
 library(clustree)
 library(monocle)
 library(ggplot2)
 library(cowplot)
 library(RColorBrewer)
 library(corrplot)
-library(org.Dm.eg.db)
-library(topGO)
 
 ## SEURAT 2.3.4 PIPELINE ##
 
