@@ -1,3 +1,12 @@
+## IN TERMINAL
+
+#Cellranger make reference
+cellranger mkref --genome=refgenome4cellranger --fasta=~/dm6/genomes/dm6_fluor_proteins_added.fa --genes=~/dm6/genes/Drosophila_melanogaster_added_genes.BDGP6.92.gtf
+#Cellranger count
+cellranger count --transcriptome=~/refgenome4cellranger/ --id=Ctrl_FC --chemistry=SC3Pv2 --fastqs=~/Deng_10X_2019/ --sample=SI-GA-B4_1,SI-GA-B4_2,SI-GA-B4_3,SI-GA-B4_4 --indices=ACTTCATA,GAGATGAC,TGCCGTGG,CTAGACCT
+
+## IN R
+
 library(Seurat)
 library(ggpubr)
 library(dplyr)
@@ -39,8 +48,7 @@ PCElbowPlot(FC.control, num.pc = 100)
 
 #Choose number of PCs
 use.pcs = c(1:30)
-PCElbowPlot(FC.control, num.pc = 100) + geom_vline(xintercept = c(0,75), linetype="dashed", color="red")
-FC.control <- FindClusters(object = FC.control, reduction.type = "pca", dims.use = use.pcs, resolution = 4.5, print.output = FALSE, save.SNN = TRUE, algorithm = 3)
+FC.control <- FindClusters(object = FC.control, reduction.type = "pca", dims.use = use.pcs, resolution = seq(0.5,5,0.5), print.output = FALSE, save.SNN = TRUE, algorithm = 3)
 PrintFindClustersParams(object = FC.control)
 sapply(grep("^res",colnames(FC.control@meta.data),value = TRUE), function(x) length(unique(FC.control@meta.data[,x])))
 
@@ -50,6 +58,9 @@ clustree(FC.control, layout = "sugiyama", use_core_edges = FALSE)
 #Choose resolution
 FC.control <- SetAllIdent(FC.control, id = "res.4.5")
 table(FC.control@ident,FC.control@meta.data$orig.ident)
+
+#If a cluster has no relevant unique genes, then merge its identity with the parent cluster
+FC.control <- SetIdent(object = FC.control, cells.use = WhichCells(object = FC.control, ident = "baby cluster"), ident.use = "parent cluster")
 
 #Run UMAP and plot
 FC.control <- RunUMAP(object = FC.control, reduction.use = "pca", dims.use = use.pcs, n_neighbors = 20, min_dist = 0.35)
